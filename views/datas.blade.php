@@ -119,9 +119,22 @@
 
   @endforeach
 
+@if($page == null)
+
 <div class="mb-2">
     合計：{{$sum}}
 </div>
 
+@endif
+
+
+@if($page != null)
+
+<div class="my-2">
+  <a class="btn btn-light" href='./datas?page={{$page - 1}}'>前へ</a>
+  <a class="btn btn-light" href='./datas?page={{$page + 1}}'>次へ</a>
+</div>
+
+@endif
 
 @endsection

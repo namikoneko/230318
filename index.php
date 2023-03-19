@@ -45,11 +45,25 @@ Flight::route('/today', function(){//###########################################
 
 Flight::route('/datas', function(){//##################################################
 
+//ページング
+
+    $page = Flight::request()->query->page;
+
+    $records = 50;//1ページあたりのレコード数
+
+    if($page == null){//$pageに数値がなければ1
+            $page = 1;
+    }
+
+    $offsetNum = ($page - 1) * $records;
+
     $db = new PDO('sqlite:./data.db');
 
-    $sql = "select * from data order by date desc";
+    $sql = "select * from data order by date desc limit ? offset ?";
+//    $sql = "select * from data order by date desc";
     $stmt = $db->prepare($sql);
-    $stmt->execute();
+    $stmt->execute(array($records, $offsetNum));
+//    $stmt->execute();
 
     $rows = makeRows($stmt);
 
@@ -57,7 +71,7 @@ Flight::route('/datas', function(){//###########################################
 
     $blade = Flight::get('blade');//
 
-    echo $blade->run("datas",array("rows"=>$rows)); //
+    echo $blade->run("datas",array("rows"=>$rows, "page"=>$page)); //
 
 
 //print_r($rows);
