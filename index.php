@@ -15,13 +15,99 @@ $blade = new BladeOne($views,$cache,BladeOne::MODE_DEBUG);
 Flight::set('blade', $blade);
 
 
+Flight::route('/cat', function(){//##################################################
+
+    $db = new PDO('sqlite:./data.db');
+
+    //$sql = "select * from cat";
+
+    $sql = "select * from cat order by sort desc, catId desc";
+    $stmt = $db->prepare($sql);
+    $stmt->execute();
+
+    $rows = makeRows($stmt);
+
+    $blade = Flight::get('blade');
+    echo $blade->run("cat",array("rows"=>$rows)); //
+});
+
+Flight::route('/catInsExe', function(){//################################################## dataIns
+
+    $clno = Flight::request()->data->clno;
+    $namae = Flight::request()->data->namae;
+    $sort = Flight::request()->data->sort;
+
+    $db = new PDO('sqlite:./data.db');
+    $stmt = $db->prepare("insert into cat (clno,namae,sort) values (?,?,?)");
+    $array = array($clno,$namae,$sort);
+
+    $stmt->execute($array);
+
+    Flight::redirect('/cat');
+});
+
+Flight::route('/catUpd', function(){//################################################## catUpd
+
+    $id = Flight::request()->query->id;
+
+    $db = new PDO('sqlite:./data.db');
+    $stmt = $db->prepare("select * from cat where catId = ?");
+    $array = array($id);
+    $stmt->execute($array);
+
+    $rows = makeRows($stmt);
+    $row = $rows[0];
+
+  //$baseUrl = Flight::get('baseUrl');//
+
+  $blade = Flight::get('blade');//
+  echo $blade->run("catUpd",array("row"=>$row));//
+});
+
+Flight::route('/catUpdExe', function(){//################################################## catUpdExe
+
+    $id = Flight::request()->data->id;
+
+    $clno = Flight::request()->data->clno;//
+
+    $namae = Flight::request()->data->namae;//
+    $sort = Flight::request()->data->sort;//
+
+    $db = new PDO('sqlite:data.db');
+    $stmt = $db->prepare("update cat set clno  = ?,namae = ?,sort = ? where catId = ?");
+    $array = array($clno, $namae, $sort, $id);
+    $stmt->execute($array);
+
+    Flight::redirect('/cat');
+});
+
+//catDel
+Flight::route('/catDel', function(){//################################################## dataDel
+
+    $id = Flight::request()->query->id;
+
+echo $id;
+
+    $db = new PDO('sqlite:data.db');
+    $stmt = $db->prepare("delete from cat where catId = ?");
+    $array = array($id);
+    $stmt->execute($array);
+
+    Flight::redirect('/cat');
+/*
+
+*/
+});
+
 Flight::route('/today', function(){//##################################################
 
     $date = date('Y-m-d');
 
     $db = new PDO('sqlite:./data.db');
 
-    $sql = "select * from data where date = ? order by title desc, id desc";
+    $sql = "select * from data left outer join cat using (clno)  where date = ?  order by title desc";
+
+//    $sql = "select * from data where date = ? order by title desc, id desc";
     $stmt = $db->prepare($sql);
     $stmt->execute(array($date));
 
@@ -63,8 +149,10 @@ Flight::route('/datas', function(){//###########################################
 
 //    $sql = "select * from data order by date desc limit ? offset ?";
 //    $sql = "select * from data order by date desc";
+
     $stmt = $db->prepare($sql);
     $stmt->execute(array($records, $offsetNum));
+
 //    $stmt->execute();
 
     $rows = makeRows($stmt);
