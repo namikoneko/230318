@@ -20,6 +20,7 @@
             <ul class="nav">
                 <li class="nav-item"><a class="nav-link" href="/230318/today">today</a></li>
                 <li class="nav-item"><a class="nav-link" href="/230318/datas">data</a></li>
+                <li class="nav-item"><a class="nav-link" href="/230318/sql-form">sql</a></li>
             </ul>
 
         </nav>

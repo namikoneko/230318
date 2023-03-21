@@ -1,5 +1,6 @@
 <?php
 ini_set('display_errors', 1);
+ini_set('date.timezone', 'Asia/Tokyo');
 
 require_once '../libs/flight/Flight.php';
 require_once '../libs/Parsedown.php';
@@ -25,22 +26,21 @@ Flight::route('/today', function(){//###########################################
     $stmt->execute(array($date));
 
     $rows = makeRows($stmt);
-
     $rows = markdownParse($rows);
 
-    $sql = "select sum(time) from data where date = ?";
+    $sql = "select sum(time),sum(time2) from data where date = ?";
     $stmt = $db->prepare($sql);
     $stmt->execute(array($date));
 
     $rowsSum = makeRows($stmt);
-
-    $sum = $rowsSum[0][0];
+    $sum = $rowsSum[0];
 
     //echo $sum;
 
-    $blade = Flight::get('blade');//
+//print_r($sum);
 
-    echo $blade->run("datas",array("rows"=>$rows,"sum"=>$sum)); //
+    $blade = Flight::get('blade');//
+    echo $blade->run("datas",array("rows"=>$rows,"sum"=>$sum, "page"=>null)); //
 });
 
 Flight::route('/datas', function(){//##################################################
@@ -59,14 +59,15 @@ Flight::route('/datas', function(){//###########################################
 
     $db = new PDO('sqlite:./data.db');
 
-    $sql = "select * from data order by date desc limit ? offset ?";
+    $sql = "select * from data left outer join cat using (clno) order by date desc limit ? offset ?";
+
+//    $sql = "select * from data order by date desc limit ? offset ?";
 //    $sql = "select * from data order by date desc";
     $stmt = $db->prepare($sql);
     $stmt->execute(array($records, $offsetNum));
 //    $stmt->execute();
 
     $rows = makeRows($stmt);
-
     $rows = markdownParse($rows);
 
     $blade = Flight::get('blade');//
@@ -121,14 +122,21 @@ Flight::route('/dataUpdExe', function(){//######################################
     $id = Flight::request()->data->id;
 
     $date = Flight::request()->data->date;//
+
+    $clno = Flight::request()->data->clno;//
+
     $title = Flight::request()->data->title;//
     $time = Flight::request()->data->time;//
+
+    $title2 = Flight::request()->data->title2;//
+    $time2 = Flight::request()->data->time2;//
+
     $text = Flight::request()->data->text;
 
 
     $db = new PDO('sqlite:data.db');
-    $stmt = $db->prepare("update data set date = ?,title = ?,time = ?,text = ? where id = ?");
-    $array = array($date, $title, $time, $text, $id);
+    $stmt = $db->prepare("update data set date = ?,clno  = ?,title = ?,time = ?,title2 = ?,time2 = ?,text = ? where id = ?");
+    $array = array($date, $clno, $title, $time, $title2, $time2, $text, $id);
     $stmt->execute($array);
 
     Flight::redirect('/today');
@@ -156,6 +164,9 @@ Flight::route('/find', function(){//############################################
 
 //    $titleOrText = Flight::request()->query->titleOrText;
     $word = Flight::request()->query->word;
+    $clno = Flight::request()->query->clno;
+
+if($word != null){
 
     $db = new PDO('sqlite:data.db');
 
@@ -166,9 +177,79 @@ Flight::route('/find', function(){//############################################
     $rows = makeRows($stmt);
     $rows = markdownParse($rows);
 
+    $sql = "select sum(time),sum(time2) from data where text like ?";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array("%{$word}%"));
+
+    $rowsSum = makeRows($stmt);
+    $sum = $rowsSum[0];
+
+//print_r($sum);
+
+  $blade = Flight::get('blade');//
+  echo $blade->run("datas",array("rows"=>$rows,"sum"=>$sum)); //
+
+}else if($clno != null){
+
+    $db = new PDO('sqlite:data.db');
+
+    $stmt = $db->prepare("select * from data where clno like ? order by date desc, id desc");
+    $array = array("%{$clno}%");
+    $stmt->execute($array);
+
+    $rows = makeRows($stmt);
+    $rows = markdownParse($rows);
+
+    $sql = "select sum(time),sum(time2) from data where clno like ?";
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array($clno));
+
+    $rowsSum = makeRows($stmt);
+    $sum = $rowsSum[0];
+
   $blade = Flight::get('blade');//
 
-  echo $blade->run("datas",array("rows"=>$rows)); //
+  echo $blade->run("datas",array("rows"=>$rows,"sum"=>$sum)); //
+
+    //echo "else!";
+}
+
+});
+
+Flight::route('/sql-form', function(){//##################################################
+
+  $blade = Flight::get('blade');//
+  echo $blade->run("sql"); //
+
+//echo "test!";
+
+});
+
+Flight::route('/sqlExe', function(){//##################################################
+
+    $text = Flight::request()->data->text;
+    $sql = $text;
+
+//echo $sql;
+
+    $db = new PDO('sqlite:data.db');
+
+    $stmt = $db->prepare($sql);
+    $array = array();
+    $stmt->execute();
+
+    Flight::redirect('/today');
+/*
+
+*/
+
+    //$rows = makeRows($stmt);
+    //$rows = markdownParse($rows);
+
+  //$blade = Flight::get('blade');//
+
+  //echo $blade->run("datas",array("rows"=>$rows)); //
+
 
 });
 

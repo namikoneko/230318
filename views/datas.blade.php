@@ -39,8 +39,16 @@
                 <label for="word" class="form-label">検索（作業）</label>
             </div>
 
-            <div class="col-4">
+            <div class="col-3">
                 <input type="text" class="inputText form-control" name="word" id="word">
+            </div>
+
+            <div class="col-2">
+                <label for="clno" class="form-label">clno</label>
+            </div>
+
+            <div class="col-3">
+                <input type="text" class="inputText form-control" name="clno" id="clno">
             </div>
 
             <div class="col-1">
@@ -62,11 +70,11 @@
             </div>
 
             <div class="col-2">
-                時間帯
+                見積時間帯
             </div>
 
             <div class="col-2">
-                時間
+                見積時間
             </div>
 
             <div class="col-4">
@@ -77,38 +85,78 @@
                 update
             </div>
 
+
+
+            <div class="col-2  offset-3">
+                実績時間帯
+            </div>
+
+            <div class="col-2">
+                実績時間
+            </div>
+
+            <div class="col-2">
+                clno
+            </div>
+
+            <div class="col-3">
+                名前
+            </div>
+
+
+
     </div>
 
 
   @foreach($rows as $row)
 
-    <div class="row mt-2">
+    <div class="row mt-2 border-bottom pb-2">
 
 
         <div class="col-1">
-            <span class="text-black-50">{{$row["id"]}}</span>
+            <span class="">{{$row["id"]}}</span>
         </div>
 
         <div class="col-2">
-            <span class="text-black-50">{{$row["date"]}}</span>
+            <span class="">{{$row["date"]}}</span>
         </div>
 
         <div class="col-2">
-            <span class="text-black-50">{{$row["title"]}}</span>
+            <span class="">{{$row["title"]}}</span>
         </div>
 
         <div class="col-2">
-            <span class="text-black-50">{{$row["time"]}}</span>
+            <span class="">{{$row["time"]}}</span>
         </div>
 
         <div class="col-4">
-            <span class="text-black-50">
+            <span class="">
                     {!!$row["text"]!!}
             </span>
         </div>
 
         <div class="col-1">
             <a class="d-inline text-decoration-none py-1" href='dataUpd?id={{$row["id"]}}'>update</a>
+        </div>
+
+
+
+        <div class="col-2 offset-3">
+            <span class="">{{$row["title2"]}}</span>
+        </div>
+
+        <div class="col-2">
+            <span class="">{{$row["time2"]}}</span>
+        </div>
+
+        <div class="col-2">
+            <span class="">
+                    {{$row["clno"]}}
+            </span>
+        </div>
+
+        <div class="col-3">
+            <span class="">{{$row["namae"]}}</span>
         </div>
 
     </div><!--row-->
@@ -121,8 +169,11 @@
 
 @if($page == null)
 
-<div class="mb-2">
-    合計：{{$sum}}
+<div class="my-2">
+<ul class="list-unstyled">
+    <li>見積合計：{{$sum[0]}}</li>
+    <li>実績合計：{{$sum[1]}}</li>
+</ul>
 </div>
 
 @endif
